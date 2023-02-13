@@ -1,6 +1,4 @@
 #pragma once
-#include <stdbool.h>
-#include <complex.h>
 
 ///
 /// This file is required because the C API provided in hptt.h is not strictly C (e.g. uses default arguments).
@@ -17,11 +15,11 @@ void dTensorTranspose( const int *perm, const int dim,
                  const int numThreads, const int useRowMajor);
 
 void cTensorTranspose( const int *perm, const int dim,
-                 const float complex alpha, bool conjA, const float complex *A, const int *sizeA, const int *outerSizeA, 
-                 const float complex beta,                    float complex *B,                   const int *outerSizeB, 
+                 const float _Complex alpha, _Bool conjA, const float _Complex *A, const int *sizeA, const int *outerSizeA, 
+                 const float _Complex beta,                    float _Complex *B,                   const int *outerSizeB, 
                  const int numThreads, const int useRowMajor);
 
 void zTensorTranspose( const int *perm, const int dim,
-                 const double complex alpha, bool conjA, const double complex *A, const int *sizeA, const int *outerSizeA, 
-                 const double complex beta,                    double complex *B,                   const int *outerSizeB, 
+                 const double _Complex alpha, _Bool conjA, const double _Complex *A, const int *sizeA, const int *outerSizeA, 
+                 const double _Complex beta,                    double _Complex *B,                   const int *outerSizeB, 
                  const int numThreads, const int useRowMajor);
