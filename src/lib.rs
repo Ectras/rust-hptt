@@ -26,12 +26,34 @@ mod implementations {
             size_a: &[i32],
             outer_size_a: Option<&[i32]>,
             beta: T,
+            b: Option<Vec<T>>,
             outer_size_b: Option<&[i32]>,
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<T>;
 
         fn transpose_simple(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>;
+    }
+
+    /// Returns a vector with the requested capacity. If vec is given, it should either
+    /// have that many elements or be empty, in which case its capacity will be set accordingly.
+    fn with_capacity<T>(vec: Option<Vec<T>>, capacity: usize) -> Vec<T> {
+        // Get a vector with enough capacity
+        if let Some(mut v) = vec {
+            if v.len() >= capacity {
+                // Given output is fully initialized, can be used directly
+                v
+            } else if v.is_empty() {
+                // Given output is empty, make sure the capacity suffices
+                v.reserve_exact(capacity - v.capacity());
+                v
+            } else {
+                panic!("Output vector must either have same length as input, or must be empty");
+            }
+        } else {
+            // Create a new vector
+            Vec::with_capacity(capacity)
+        }
     }
 
     impl Transposable<f32> for () {
@@ -42,6 +64,7 @@ mod implementations {
             size_a: &[i32],
             outer_size_a: Option<&[i32]>,
             beta: f32,
+            b: Option<Vec<f32>>,
             outer_size_b: Option<&[i32]>,
             num_threads: u32,
             use_row_major: bool,
@@ -50,7 +73,8 @@ mod implementations {
                 matches!(outer_size_a, None) && matches!(outer_size_b, None),
                 "Outer size not supported yet"
             );
-            let mut out = Vec::with_capacity(a.len());
+
+            let mut out = with_capacity(b, a.len());
             unsafe {
                 sTensorTranspose(
                     perm.as_ptr(),
@@ -79,6 +103,7 @@ mod implementations {
                 None,
                 0.0f32,
                 None,
+                None,
                 unsafe { DEFAULT_NUM_THREADS },
                 unsafe { USE_ROW_MAJOR },
             )
@@ -93,6 +118,7 @@ mod implementations {
             size_a: &[i32],
             outer_size_a: Option<&[i32]>,
             beta: f64,
+            b: Option<Vec<f64>>,
             outer_size_b: Option<&[i32]>,
             num_threads: u32,
             use_row_major: bool,
@@ -101,7 +127,7 @@ mod implementations {
                 matches!(outer_size_a, None) && matches!(outer_size_b, None),
                 "Outer size not supported yet"
             );
-            let mut out = Vec::with_capacity(a.len());
+            let mut out = with_capacity(b, a.len());
             unsafe {
                 dTensorTranspose(
                     perm.as_ptr(),
@@ -130,6 +156,7 @@ mod implementations {
                 None,
                 0.0,
                 None,
+                None,
                 unsafe { DEFAULT_NUM_THREADS },
                 unsafe { USE_ROW_MAJOR },
             )
@@ -144,6 +171,7 @@ mod implementations {
             size_a: &[i32],
             outer_size_a: Option<&[i32]>,
             beta: Complex32,
+            b: Option<Vec<Complex32>>,
             outer_size_b: Option<&[i32]>,
             num_threads: u32,
             use_row_major: bool,
@@ -152,7 +180,7 @@ mod implementations {
                 matches!(outer_size_a, None) && matches!(outer_size_b, None),
                 "Outer size not supported yet"
             );
-            let mut out: Vec<Complex32> = Vec::with_capacity(a.len());
+            let mut out: Vec<Complex32> = with_capacity(b, a.len());
             unsafe {
                 cTensorTranspose(
                     perm.as_ptr(),
@@ -182,6 +210,7 @@ mod implementations {
                 None,
                 Complex32::new(0.0f32, 0.0f32),
                 None,
+                None,
                 unsafe { DEFAULT_NUM_THREADS },
                 unsafe { USE_ROW_MAJOR },
             )
@@ -196,6 +225,7 @@ mod implementations {
             size_a: &[i32],
             outer_size_a: Option<&[i32]>,
             beta: Complex64,
+            b: Option<Vec<Complex64>>,
             outer_size_b: Option<&[i32]>,
             num_threads: u32,
             use_row_major: bool,
@@ -204,7 +234,7 @@ mod implementations {
                 matches!(outer_size_a, None) && matches!(outer_size_b, None),
                 "Outer size not supported yet"
             );
-            let mut out: Vec<Complex64> = Vec::with_capacity(a.len());
+            let mut out: Vec<Complex64> = with_capacity(b, a.len());
             unsafe {
                 zTensorTranspose(
                     perm.as_ptr(),
@@ -234,6 +264,7 @@ mod implementations {
                 None,
                 Complex64::new(0.0, 0.0),
                 None,
+                None,
                 unsafe { DEFAULT_NUM_THREADS },
                 unsafe { USE_ROW_MAJOR },
             )
@@ -241,12 +272,14 @@ mod implementations {
     }
 }
 
+/// Computes B_{\pi(i_0,i_1,...)} = \alpha * A_{i_0,i_1,...} + \beta * B_{\pi(i_0,i_1,...)}.
 pub fn transpose<T>(
     perm: &[i32],
     alpha: T,
     a: &[T],
     size_a: &[i32],
     beta: T,
+    b: Option<Vec<T>>,
     num_threads: u32,
     use_row_major: bool,
 ) -> Vec<T>
@@ -260,6 +293,7 @@ where
         size_a,
         None,
         beta,
+        b,
         None,
         num_threads,
         use_row_major,
@@ -291,7 +325,7 @@ where
 
 /// Creates the permuted version of an array. Can be used to compute the new shape after
 /// transposing an array.
-/// 
+///
 /// # Example
 /// ```
 /// # use hptt_sys::permute;
@@ -346,7 +380,7 @@ mod tests {
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
         ];
 
-        let b = transpose(&[3, 2, 0, 1], 1.0, a, &[2, 2, 3, 1], 0.0, 1, true);
+        let b = transpose(&[3, 2, 0, 1], 1.0, a, &[2, 2, 3, 1], 0.0, None, 1, true);
 
         test_transposed(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
     }
@@ -380,6 +414,7 @@ mod tests {
             a,
             &[3, 2],
             Complex64::new(0.0, 0.0),
+            None,
             1,
             true,
         );
