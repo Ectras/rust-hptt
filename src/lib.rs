@@ -3,6 +3,7 @@ mod hptt {
 }
 
 static mut DEFAULT_NUM_THREADS: u32 = 1;
+static mut USE_ROW_MAJOR: bool = true;
 
 mod implementations {
     use std::mem::transmute;
@@ -10,11 +11,11 @@ mod implementations {
     use num_complex::{Complex32, Complex64};
 
     use crate::{
-        DEFAULT_NUM_THREADS,
         hptt::{
             __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose,
             zTensorTranspose,
         },
+        DEFAULT_NUM_THREADS, USE_ROW_MAJOR,
     };
 
     pub trait Transposable<T> {
@@ -79,7 +80,7 @@ mod implementations {
                 0.0f32,
                 None,
                 unsafe { DEFAULT_NUM_THREADS },
-                true,
+                unsafe { USE_ROW_MAJOR },
             )
         }
     }
@@ -130,7 +131,7 @@ mod implementations {
                 0.0,
                 None,
                 unsafe { DEFAULT_NUM_THREADS },
-                true,
+                unsafe { USE_ROW_MAJOR },
             )
         }
     }
@@ -182,7 +183,7 @@ mod implementations {
                 Complex32::new(0.0f32, 0.0f32),
                 None,
                 unsafe { DEFAULT_NUM_THREADS },
-                true,
+                unsafe { USE_ROW_MAJOR },
             )
         }
     }
@@ -234,7 +235,7 @@ mod implementations {
                 Complex64::new(0.0, 0.0),
                 None,
                 unsafe { DEFAULT_NUM_THREADS },
-                true,
+                unsafe { USE_ROW_MAJOR },
             )
         }
     }
@@ -265,19 +266,11 @@ where
     )
 }
 
-pub fn transpose_simple<T>(
-    perm: &[i32],
-    a: &[T],
-    size_a: &[i32],
-) -> Vec<T>
+pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
     (): implementations::Transposable<T>,
 {
-    <() as implementations::Transposable<T>>::transpose_simple(
-        perm,
-        a,
-        size_a,
-    )
+    <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
 }
 
 /// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
@@ -285,6 +278,14 @@ where
 pub fn set_number_of_threads(threads: u32) {
     unsafe {
         DEFAULT_NUM_THREADS = threads;
+    }
+}
+
+/// Sets whether to use row or column major for [`transpose_simple<T>()`]. This is a global property,
+/// shared across threads but not guarded by a mutex. Hence, race conditions can happen.
+pub fn set_use_row_major(row_major: bool) {
+    unsafe {
+        USE_ROW_MAJOR = row_major;
     }
 }
 
