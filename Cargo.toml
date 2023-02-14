@@ -2,10 +2,17 @@
 name = "hptt-sys"
 version = "0.1.0"
 edition = "2021"
+readme = "Readme.md"
+description = "A wrapper to the C interface of the hptt (high performance tensor transpose) library."
+license = "MIT"
+repository = "https://gitlab.lrz.de/quantum-research/hptt-sys"
+keywords = ["hptt", "transpose", "tensor"]
+categories = ["api-bindings", "science"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+num-complex = "0.4"
 
 [build-dependencies]
 cmake = "0.1"
