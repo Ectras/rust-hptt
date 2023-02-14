@@ -266,11 +266,45 @@ where
     )
 }
 
+/// Transposes the data in `a`, i.e. permutes the axes in the specified way.
+/// It uses the global thread and row/column major settings.
+///
+/// # Example
+/// ```
+/// # use hptt_sys::transpose_simple;
+/// let a = &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]; // flat data
+/// let shape = &[2, 3]; // actual shape of 'a' (2x3 matrix)
+/// let perm = &[1, 0]; // swap the axes: put axis 1 first, axis 0 second
+/// let b = transpose_simple(perm, a, shape);
+/// // 'b' is now the flat data of a (3x2) matrix
+/// assert_eq!(b[0], a[0]);
+/// assert_eq!(b[1], a[2]);
+/// assert_eq!(b[2], a[4]);
+/// // ...
+/// ```
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
     (): implementations::Transposable<T>,
 {
     <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
+}
+
+/// Creates the permuted version of an array. Can be used to compute the new shape after
+/// transposing an array.
+/// 
+/// # Example
+/// ```
+/// # use hptt_sys::permute;
+/// let arr = &[2, 2, 3, 1];
+/// let perm = &[3, 2, 0, 1];
+/// let out = permute(perm, arr);
+/// assert_eq!(out, vec![1, 3, 2, 2]);
+/// ```
+pub fn permute<T>(perm: &[i32], arr: &[T]) -> Vec<T>
+where
+    T: Copy,
+{
+    (0..arr.len()).map(|i| arr[perm[i] as usize]).collect()
 }
 
 /// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
