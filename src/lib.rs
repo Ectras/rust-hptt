@@ -3,7 +3,7 @@ mod hptt {
 }
 
 static mut DEFAULT_NUM_THREADS: u32 = 1;
-static mut USE_ROW_MAJOR: bool = true;
+static mut USE_ROW_MAJOR: bool = false;
 
 mod implementations {
     use std::mem::transmute;
@@ -319,13 +319,14 @@ mod tests {
 
     #[test]
     fn f64_tensor_simple() {
+        // transpose_simple uses default column-major setting
         let a = &[
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
         ];
 
         let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
 
-        test_transposed(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
+        test_transposed(a, &b, &[0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
     }
 
     #[test]
