@@ -23,6 +23,8 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<T>;
+
+        fn transpose_simple(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>;
     }
 
     impl Transposable<f32> for () {
@@ -59,6 +61,10 @@ mod implementations {
                 out.set_len(a.len());
             }
             out
+        }
+
+        fn transpose_simple(perm: &[i32], a: &[f32], size_a: &[i32]) -> Vec<f32> {
+            Self::transpose(perm, 1.0f32, a, size_a, None, 0.0f32, None, 1, true)
         }
     }
 
@@ -97,6 +103,10 @@ mod implementations {
             }
             out
         }
+
+        fn transpose_simple(perm: &[i32], a: &[f64], size_a: &[i32]) -> Vec<f64> {
+            Self::transpose(perm, 1.0, a, size_a, None, 0.0, None, 1, true)
+        }
     }
 
     impl Transposable<Complex32> for () {
@@ -123,7 +133,6 @@ mod implementations {
                     transmute(alpha),
                     false,
                     a.as_ptr().cast::<__BindgenComplex<f32>>(),
-                    //a.as_ptr() as *const __BindgenComplex<f32>,
                     size_a.as_ptr(),
                     outer_size_a.map_or(std::ptr::null(), <[i32]>::as_ptr),
                     transmute(beta),
@@ -135,6 +144,20 @@ mod implementations {
                 out.set_len(a.len());
             }
             out
+        }
+
+        fn transpose_simple(perm: &[i32], a: &[Complex32], size_a: &[i32]) -> Vec<Complex32> {
+            Self::transpose(
+                perm,
+                Complex32::new(1.0f32, 0.0f32),
+                a,
+                size_a,
+                None,
+                Complex32::new(0.0f32, 0.0f32),
+                None,
+                1,
+                true,
+            )
         }
     }
 
@@ -174,6 +197,20 @@ mod implementations {
             }
             out
         }
+
+        fn transpose_simple(perm: &[i32], a: &[Complex64], size_a: &[i32]) -> Vec<Complex64> {
+            Self::transpose(
+                perm,
+                Complex64::new(1.0, 0.0),
+                a,
+                size_a,
+                None,
+                Complex64::new(0.0, 0.0),
+                None,
+                1,
+                true,
+            )
+        }
     }
 }
 
@@ -202,6 +239,21 @@ where
     )
 }
 
+pub fn transpose_simple<T>(
+    perm: &[i32],
+    a: &[T],
+    size_a: &[i32],
+) -> Vec<T>
+where
+    (): implementations::Transposable<T>,
+{
+    <() as implementations::Transposable<T>>::transpose_simple(
+        perm,
+        a,
+        size_a,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use std::fmt::Debug;
@@ -226,6 +278,17 @@ mod tests {
         ];
 
         let b = transpose(&[3, 2, 0, 1], 1.0, a, &[2, 2, 3, 1], 0.0, 1, true);
+
+        test_transposed(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
+    }
+
+    #[test]
+    fn f64_tensor_simple() {
+        let a = &[
+            0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
+        ];
+
+        let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
 
         test_transposed(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
     }
