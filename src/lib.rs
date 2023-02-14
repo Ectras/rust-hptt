@@ -2,13 +2,19 @@ mod hptt {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
+static mut DEFAULT_NUM_THREADS: u32 = 1;
+
 mod implementations {
     use std::mem::transmute;
 
     use num_complex::{Complex32, Complex64};
 
-    use crate::hptt::{
-        __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose, zTensorTranspose,
+    use crate::{
+        DEFAULT_NUM_THREADS,
+        hptt::{
+            __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose,
+            zTensorTranspose,
+        },
     };
 
     pub trait Transposable<T> {
@@ -64,7 +70,17 @@ mod implementations {
         }
 
         fn transpose_simple(perm: &[i32], a: &[f32], size_a: &[i32]) -> Vec<f32> {
-            Self::transpose(perm, 1.0f32, a, size_a, None, 0.0f32, None, 1, true)
+            Self::transpose(
+                perm,
+                1.0f32,
+                a,
+                size_a,
+                None,
+                0.0f32,
+                None,
+                unsafe { DEFAULT_NUM_THREADS },
+                true,
+            )
         }
     }
 
@@ -105,7 +121,17 @@ mod implementations {
         }
 
         fn transpose_simple(perm: &[i32], a: &[f64], size_a: &[i32]) -> Vec<f64> {
-            Self::transpose(perm, 1.0, a, size_a, None, 0.0, None, 1, true)
+            Self::transpose(
+                perm,
+                1.0,
+                a,
+                size_a,
+                None,
+                0.0,
+                None,
+                unsafe { DEFAULT_NUM_THREADS },
+                true,
+            )
         }
     }
 
@@ -155,7 +181,7 @@ mod implementations {
                 None,
                 Complex32::new(0.0f32, 0.0f32),
                 None,
-                1,
+                unsafe { DEFAULT_NUM_THREADS },
                 true,
             )
         }
@@ -207,7 +233,7 @@ mod implementations {
                 None,
                 Complex64::new(0.0, 0.0),
                 None,
-                1,
+                unsafe { DEFAULT_NUM_THREADS },
                 true,
             )
         }
@@ -252,6 +278,14 @@ where
         a,
         size_a,
     )
+}
+
+/// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
+/// shared across threads but not guarded by a mutex. Hence, race conditions can happen.
+pub fn set_number_of_threads(threads: u32) {
+    unsafe {
+        DEFAULT_NUM_THREADS = threads;
+    }
 }
 
 #[cfg(test)]
