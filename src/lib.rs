@@ -329,16 +329,37 @@ where
 /// # Example
 /// ```
 /// # use hptt_sys::permute;
-/// let arr = &[2, 2, 3, 1];
+/// let arr = &[2, 4, 3, 1];
 /// let perm = &[3, 2, 0, 1];
 /// let out = permute(perm, arr);
-/// assert_eq!(out, vec![1, 3, 2, 2]);
+/// assert_eq!(out, vec![1, 3, 2, 4]);
 /// ```
 pub fn permute<T>(perm: &[i32], arr: &[T]) -> Vec<T>
 where
     T: Copy,
 {
     (0..arr.len()).map(|i| arr[perm[i] as usize]).collect()
+}
+
+/// Creates the inverse permuted version of an array. Used to access values in transposed array.
+///
+/// # Example
+/// ```
+/// # use hptt_sys::permute;
+/// # use hptt_sys::inv_permute;
+/// let arr = &[2, 4, 3, 1];
+/// let perm = &[3, 2, 0, 1];
+/// let out = permute(perm, arr);
+/// let perm2 = inv_permute(perm, &out);
+/// assert_eq!(perm2, vec![2, 4, 3, 1]);
+/// ```
+pub fn inv_permute<T>(perm: &[i32], arr: &[T]) -> Vec<T>
+where
+    T: Copy,
+{
+    let mut indices = (0..perm.len()).collect::<Vec<_>>();
+    indices.sort_by_key(|&i| &perm[i]);
+    (0..arr.len()).map(|i| arr[indices[i]]).collect()
 }
 
 /// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
