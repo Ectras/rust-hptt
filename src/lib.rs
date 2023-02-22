@@ -359,7 +359,7 @@ where
     T: Copy,
 {
     let mut indices = (0..perm.len()).collect::<Vec<_>>();
-    indices.sort_by_key(|&i| &perm[i]);
+    indices.sort_unstable_by_key(|&i| &perm[i]);
     (0..arr.len()).map(|i| arr[indices[i]]).collect()
 }
 
