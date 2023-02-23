@@ -9,7 +9,7 @@ fn main() {
     // Link it
     println!("cargo:rustc-link-search={}", dst.join("lib").display());
     println!("cargo:rustc-link-lib=hptt");
-    println!("cargo:rustc-link-lib=gomp");
+    println!("cargo:rustc-link-arg=-fopenmp");
     println!("cargo:rustc-link-lib=stdc++");
 
     // Generate bindings
