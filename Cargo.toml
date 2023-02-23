@@ -13,6 +13,7 @@ categories = ["api-bindings", "science"]
 
 [dependencies]
 num-complex = "0.4"
+openmp-sys = "1.2"
 
 [build-dependencies]
 cmake = "0.1"

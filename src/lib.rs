@@ -1,3 +1,5 @@
+extern crate openmp_sys;
+
 mod hptt {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
