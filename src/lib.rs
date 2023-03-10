@@ -325,46 +325,6 @@ where
     <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
 }
 
-/// Creates the permuted version of an array. Can be used to compute the new shape after
-/// transposing an array.
-///
-/// # Example
-/// ```
-/// # use hptt_sys::permute;
-/// let arr = &[2, 4, 3, 1];
-/// let perm = &[3, 2, 0, 1];
-/// let arr_p = permute(perm, arr);
-/// assert_eq!(arr_p, vec![1, 3, 2, 4]);
-/// ```
-pub fn permute<T>(perm: &[i32], arr: &[T]) -> Vec<T>
-where
-    T: Copy,
-{
-    (0..arr.len()).map(|i| arr[perm[i] as usize]).collect()
-}
-
-/// Creates the inverse permuted version of an array. Can be used to compute the original
-/// shape of a transposed array.
-///
-/// # Example
-/// ```
-/// # use hptt_sys::permute;
-/// # use hptt_sys::inv_permute;
-/// let arr = &[2, 4, 3, 1];
-/// let perm = &[3, 2, 0, 1];
-/// let arr_p = permute(perm, arr);
-/// let arr2 = inv_permute(perm, &arr_p);
-/// assert_eq!(arr2, arr);
-/// ```
-pub fn inv_permute<T>(perm: &[i32], arr: &[T]) -> Vec<T>
-where
-    T: Copy,
-{
-    let mut indices = (0..perm.len()).collect::<Vec<_>>();
-    indices.sort_unstable_by_key(|&i| &perm[i]);
-    (0..arr.len()).map(|i| arr[indices[i]]).collect()
-}
-
 /// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
 /// shared across threads but not guarded by a mutex. Hence, race conditions can happen.
 pub fn set_number_of_threads(threads: u32) {
