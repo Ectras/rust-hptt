@@ -72,7 +72,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<f32> {
             assert!(
-                matches!(outer_size_a, None) && matches!(outer_size_b, None),
+                outer_size_a.is_none() && outer_size_b.is_none(),
                 "Outer size not supported yet"
             );
 
@@ -89,7 +89,7 @@ mod implementations {
                     out.as_mut_ptr(),
                     outer_size_b.map_or(std::ptr::null(), <[i32]>::as_ptr),
                     num_threads.try_into().unwrap(),
-                    use_row_major.try_into().unwrap(),
+                    use_row_major.into(),
                 );
                 out.set_len(a.len());
             }
@@ -126,7 +126,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<f64> {
             assert!(
-                matches!(outer_size_a, None) && matches!(outer_size_b, None),
+                outer_size_a.is_none() && outer_size_b.is_none(),
                 "Outer size not supported yet"
             );
             let mut out = with_capacity(b, a.len());
@@ -142,7 +142,7 @@ mod implementations {
                     out.as_mut_ptr(),
                     outer_size_b.map_or(std::ptr::null(), <[i32]>::as_ptr),
                     num_threads.try_into().unwrap(),
-                    use_row_major.try_into().unwrap(),
+                    use_row_major.into(),
                 );
                 out.set_len(a.len());
             }
@@ -179,7 +179,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<Complex32> {
             assert!(
-                matches!(outer_size_a, None) && matches!(outer_size_b, None),
+                outer_size_a.is_none() && outer_size_b.is_none(),
                 "Outer size not supported yet"
             );
             let mut out: Vec<Complex32> = with_capacity(b, a.len());
@@ -196,7 +196,7 @@ mod implementations {
                     out.as_mut_ptr().cast::<__BindgenComplex<f32>>(),
                     outer_size_b.map_or(std::ptr::null(), <[i32]>::as_ptr),
                     num_threads.try_into().unwrap(),
-                    use_row_major.try_into().unwrap(),
+                    use_row_major.into(),
                 );
                 out.set_len(a.len());
             }
@@ -233,7 +233,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<Complex64> {
             assert!(
-                matches!(outer_size_a, None) && matches!(outer_size_b, None),
+                outer_size_a.is_none() && outer_size_b.is_none(),
                 "Outer size not supported yet"
             );
             let mut out: Vec<Complex64> = with_capacity(b, a.len());
@@ -250,7 +250,7 @@ mod implementations {
                     out.as_mut_ptr().cast::<__BindgenComplex<f64>>(),
                     outer_size_b.map_or(std::ptr::null(), <[i32]>::as_ptr),
                     num_threads.try_into().unwrap(),
-                    use_row_major.try_into().unwrap(),
+                    use_row_major.into(),
                 );
                 out.set_len(a.len());
             }
