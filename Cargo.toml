@@ -12,9 +12,9 @@ categories = ["api-bindings", "science"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-num-complex = "0.4"
-openmp-sys = "1.2"
+num-complex = "0.4.4"
+openmp-sys = "1.2.3"
 
 [build-dependencies]
-cmake = "0.1"
+cmake = "0.1.50"
 bindgen = "0.69.2"
