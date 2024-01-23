@@ -17,4 +17,4 @@ openmp-sys = "1.2"
 
 [build-dependencies]
 cmake = "0.1"
-bindgen = "0.64"
+bindgen = "0.69.2"
