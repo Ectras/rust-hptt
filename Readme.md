@@ -33,12 +33,26 @@ fn transpose_simple(
 
 ## Example
 
-This example transposes a vector of shape (2, 2, 3, 1) to a vector of shape (1, 3, 2, 2). The data is passed as a flat slice. Note that `transpose_simple` assumes column-major ordering.
+The following transposes a 2x3 matrix. The data is passed as a flat slice. Note that `transpose_simple` assumes column-major ordering.
 
 ```rust
 use hptt_sys::transpose_simple;
 
-let a = &[0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,];
-let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
-assert_eq!(b, vec![0.1, 0.54, 0.37, 0.65, 0.17, 0.22, 0.34, 0, 0.05, 0.76, 0.63, 0.17]);
+// Input:
+// 1 3 5
+// 2 4 6
+
+let a = &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]; // flat data (column-major)
+let shape = &[2, 3]; // actual shape of 'a' (2x3 matrix)
+let perm = &[1, 0]; // swap the axes: put axis 1 first, axis 0 second
+
+let b = transpose_simple(perm, a, shape);
+// b is now the flat data of the transposed 3x2 matrix
+
+// Output:
+// 1 2
+// 3 4
+// 5 6
+
+assert_eq!(b, vec![1.0, 3.0, 5.0, 2.0, 4.0, 6.0]);
 ```

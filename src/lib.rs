@@ -318,10 +318,7 @@ where
 /// let perm = &[1, 0]; // swap the axes: put axis 1 first, axis 0 second
 /// let b = transpose_simple(perm, a, shape);
 /// // 'b' is now the flat data of a (3x2) matrix
-/// assert_eq!(b[0], a[0]);
-/// assert_eq!(b[1], a[2]);
-/// assert_eq!(b[2], a[4]);
-/// // ...
+/// assert_eq!(b, vec![1.0, 3.0, 5.0, 2.0, 4.0, 6.0]);
 /// ```
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
