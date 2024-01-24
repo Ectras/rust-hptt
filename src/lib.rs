@@ -345,32 +345,33 @@ pub fn set_use_row_major(row_major: bool) {
 mod tests {
     use std::fmt::Debug;
 
-    use num_complex::Complex64;
+    use float_cmp::assert_approx_eq;
+    use num_complex::{Complex32, Complex64};
 
-    use super::*;
+    use crate::{transpose, transpose_simple};
 
-    fn test_transposed<T>(original: &[T], transposed: &[T], permutated_indices: &[usize])
+    fn check_transposed_equality<T>(original: &[T], transposed: &[T], permutated_indices: &[usize])
     where
         T: Debug + PartialEq,
     {
-        for (i, j) in permutated_indices.iter().enumerate() {
-            assert_eq!(transposed[i], original[*j]);
+        for (i, &j) in permutated_indices.iter().enumerate() {
+            assert_eq!(transposed[i], original[j]);
         }
     }
 
     #[test]
-    fn f64_tensor() {
+    fn test_f64_tensor() {
         let a = &[
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
         ];
 
         let b = transpose(&[3, 2, 0, 1], 1.0, a, &[2, 2, 3, 1], 0.0, None, 1, true);
 
-        test_transposed(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
+        check_transposed_equality(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
     }
 
     #[test]
-    fn f64_tensor_simple() {
+    fn test_simple_f64_tensor() {
         // transpose_simple uses default column-major setting
         let a = &[
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
@@ -378,11 +379,11 @@ mod tests {
 
         let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
 
-        test_transposed(a, &b, &[0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
+        check_transposed_equality(a, &b, &[0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
     }
 
     #[test]
-    fn complex64_matrix() {
+    fn test_complex64_matrix() {
         let a = &[
             Complex64::new(1.0, 2.0),
             Complex64::new(3.0, 0.0),
@@ -403,6 +404,63 @@ mod tests {
             true,
         );
 
-        test_transposed(a, &b, &[0, 2, 4, 1, 3, 5]);
+        check_transposed_equality(a, &b, &[0, 2, 4, 1, 3, 5]);
+    }
+
+    #[test]
+    fn test_multithreaded_f32() {
+        let a = [
+            2.4f32, 3.5, 4.6, 5.7, 6.8, 7.9, 8.0, 9.1, 10.2, 11.3, 12.4, 13.5,
+        ];
+        let b = transpose(&[2, 0, 1], 1.0f32, &a, &[2, 3, 2], 0.0f32, None, 4, false);
+
+        check_transposed_equality(&a, &b, &[0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11]);
+    }
+
+    #[test]
+    fn test_alpha_beta_complex32() {
+        let a = [
+            Complex32::new(1.0, 2.0),
+            Complex32::new(0.0, -1.0),
+            Complex32::new(0.1, 2.5),
+            Complex32::new(0.0, 0.0),
+            Complex32::new(-3.0, 0.0),
+            Complex32::new(0.0, 3.0),
+        ];
+
+        let b = vec![
+            Complex32::new(1.0, -0.5),
+            Complex32::new(2.0, 0.0),
+            Complex32::new(0.5, 1.0),
+            Complex32::new(0.0, -2.0),
+            Complex32::new(-2.0, 0.0),
+            Complex32::new(-0.5, 1.0),
+        ];
+
+        let c = transpose(
+            &[1, 0],
+            Complex32::new(1.0, 0.5),
+            &a,
+            &[3, 2],
+            Complex32::new(0.5, 1.0),
+            Some(b),
+            1,
+            true,
+        );
+
+        let solution = [
+            Complex32::new(1.0, 3.25),
+            Complex32::new(-0.15, 4.55),
+            Complex32::new(-3.75, -0.5),
+            Complex32::new(2.5, -2.0),
+            Complex32::new(-1.0, -2.0),
+            Complex32::new(-2.75, 3.0),
+        ];
+
+        assert_eq!(c.len(), solution.len());
+        for (i, &s) in solution.iter().enumerate() {
+            assert_approx_eq!(f32, c[i].re, s.re, ulps = 2);
+            assert_approx_eq!(f32, c[i].im, s.im, ulps = 2);
+        }
     }
 }
