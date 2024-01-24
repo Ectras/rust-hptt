@@ -274,7 +274,11 @@ mod implementations {
     }
 }
 
-/// Computes B_{\pi(i_0,i_1,...)} = \alpha * A_{i_0,i_1,...} + \beta * B_{\pi(i_0,i_1,...)}.
+/// This computes the transpose of `a` multiplied by `alpha` and adds the result to
+/// the out tensor `b` multiplied by `beta`. The axes of `a` are permuted in the
+/// order given by `perm`. If `b` is `None`, a new vector is created and returned.
+/// 
+/// In other words: `b = alpha * transpose(a) + beta * b`
 pub fn transpose<T>(
     perm: &[i32],
     alpha: T,
@@ -302,8 +306,9 @@ where
     )
 }
 
-/// Transposes the data in `a`, i.e. permutes the axes in the specified way.
-/// It uses the global thread and row/column major settings.
+/// Computes the transpose of `a`, i.e. returns the data with the axes permuted in 
+/// the order given by `perm`. It uses the global thread and row/column major
+/// settings.
 ///
 /// # Example
 /// ```
