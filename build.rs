@@ -4,7 +4,9 @@ use cmake::Config;
 
 fn main() {
     // Build hptt
-    let dst = Config::new("hptt").build();
+    let extern_path = PathBuf::from("extern");
+    let hptt_path = extern_path.join("hptt");
+    let dst = Config::new(hptt_path).build();
 
     // Link it
     println!("cargo:rustc-link-search={}", dst.join("lib").display());
@@ -12,10 +14,9 @@ fn main() {
     println!("cargo:rustc-link-lib=stdc++");
 
     // Generate bindings
-    let header = "hptt_c_api.h";
-    println!("cargo:rerun-if-changed={header}");
+    let header = extern_path.join("api.h");
     let bindings = bindgen::Builder::default()
-        .header(header)
+        .header(header.to_str().unwrap())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
