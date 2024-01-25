@@ -134,8 +134,6 @@ dependencies = [
 name = "hptt"
 version = "0.1.0"
 dependencies = [
- "bindgen",
- "cmake",
  "float-cmp",
  "hptt-sys",
  "num-complex",

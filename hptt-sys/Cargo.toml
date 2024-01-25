@@ -2,8 +2,10 @@
 name = "hptt-sys"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
+description = "Low-level bindings to the C interface of the hptt (high performance tensor transpose) library."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/Ectras/hptt-sys"
+repository = "https://github.com/Ectras/rust-hptt"
 keywords = ["hptt", "transpose", "tensor"]
 categories = ["external-ffi-bindings", "science", "algorithms"]
 links = "hptt"

@@ -2,22 +2,16 @@
 name = "hptt"
 version = "0.1.0"
 edition = "2021"
-readme = "Readme.md"
+readme = "README.md"
 description = "A wrapper to the C interface of the hptt (high performance tensor transpose) library."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/Ectras/hptt"
+repository = "https://github.com/Ectras/rust-hptt"
 keywords = ["hptt", "transpose", "tensor"]
-categories = ["api-bindings", "science"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+categories = ["api-bindings", "science", "algorithms"]
 
 [dependencies]
 num-complex = "0.4.4"
 hptt-sys = { path = "../hptt-sys" }
-
-[build-dependencies]
-cmake = "0.1.50"
-bindgen = "0.69.2"
 
 [dev-dependencies]
 float-cmp = "0.9.0"
