@@ -1,11 +1,11 @@
 [package]
-name = "hptt-sys"
+name = "hptt"
 version = "0.1.0"
 edition = "2021"
 readme = "Readme.md"
 description = "A wrapper to the C interface of the hptt (high performance tensor transpose) library."
 license = "MIT OR Apache-2.0"
-repository = "https://gitlab.lrz.de/quantum-research/hptt-sys"
+repository = "https://github.com/Ectras/hptt"
 keywords = ["hptt", "transpose", "tensor"]
 categories = ["api-bindings", "science"]
 
