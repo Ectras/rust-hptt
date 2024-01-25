@@ -13,7 +13,7 @@ categories = ["api-bindings", "science"]
 
 [dependencies]
 num-complex = "0.4.4"
-hptt-sys = { git = "ssh://git@github.com/Ectras/hptt-sys.git" }
+hptt-sys = { path = "../hptt-sys" }
 
 [build-dependencies]
 cmake = "0.1.50"

@@ -1,3 +1,3 @@
 [workspace]
-members = ["hptt"]
+members = ["hptt", "hptt-sys"]
 resolver = "2"

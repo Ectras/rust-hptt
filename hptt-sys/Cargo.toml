@@ -1,0 +1,16 @@
+[package]
+name = "hptt-sys"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Ectras/hptt-sys"
+keywords = ["hptt", "transpose", "tensor"]
+categories = ["external-ffi-bindings", "science", "algorithms"]
+links = "hptt"
+
+[build-dependencies]
+bindgen = "0.69.2"
+cmake = "0.1.50"
+
+[dependencies]
+openmp-sys = "1.2.3"
