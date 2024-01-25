@@ -131,13 +131,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "hptt-sys"
+name = "hptt"
 version = "0.1.0"
 dependencies = [
  "bindgen",
  "cmake",
  "float-cmp",
+ "hptt-sys",
  "num-complex",
+]
+
+[[package]]
+name = "hptt-sys"
+version = "0.1.0"
+source = "git+ssh://git@github.com/Ectras/hptt-sys.git#51f71a4ea0cedd916a1815e654f2c8987075d26f"
+dependencies = [
+ "bindgen",
+ "cmake",
  "openmp-sys",
 ]
 

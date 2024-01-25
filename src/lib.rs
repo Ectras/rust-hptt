@@ -1,9 +1,3 @@
-extern crate openmp_sys;
-
-mod hptt {
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-}
-
 static mut DEFAULT_NUM_THREADS: u32 = 1;
 static mut USE_ROW_MAJOR: bool = false;
 
@@ -12,13 +6,11 @@ mod implementations {
 
     use num_complex::{Complex32, Complex64};
 
-    use crate::{
-        hptt::{
-            __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose,
-            zTensorTranspose,
-        },
-        DEFAULT_NUM_THREADS, USE_ROW_MAJOR,
+    use hptt_sys::{
+        __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose, zTensorTranspose,
     };
+
+    use crate::{DEFAULT_NUM_THREADS, USE_ROW_MAJOR};
 
     pub trait Transposable<T> {
         fn transpose(
@@ -277,7 +269,7 @@ mod implementations {
 /// This computes the transpose of `a` multiplied by `alpha` and adds the result to
 /// the out tensor `b` multiplied by `beta`. The axes of `a` are permuted in the
 /// order given by `perm`. If `b` is `None`, a new vector is created and returned.
-/// 
+///
 /// In other words: `b = alpha * transpose(a) + beta * b`
 pub fn transpose<T>(
     perm: &[i32],
@@ -306,13 +298,13 @@ where
     )
 }
 
-/// Computes the transpose of `a`, i.e. returns the data with the axes permuted in 
+/// Computes the transpose of `a`, i.e. returns the data with the axes permuted in
 /// the order given by `perm`. It uses the global thread and row/column major
 /// settings.
 ///
 /// # Example
 /// ```
-/// # use hptt_sys::transpose_simple;
+/// # use hptt::transpose_simple;
 /// let a = &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]; // flat data
 /// let shape = &[2, 3]; // actual shape of 'a' (2x3 matrix)
 /// let perm = &[1, 0]; // swap the axes: put axis 1 first, axis 0 second
