@@ -20,24 +20,6 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<T>;
-
-        fn transpose_simple(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
-        where
-            T: From<f64>,
-        {
-            Self::transpose(
-                perm,
-                1.0.into(),
-                a,
-                size_a,
-                None,
-                0.0.into(),
-                None,
-                None,
-                1,
-                false,
-            )
-        }
     }
 
     /// Returns a vector with the requested capacity. If vec is given, it should either
@@ -268,7 +250,16 @@ where
     (): implementations::Transposable<T>,
     T: From<f64>,
 {
-    <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
+    transpose(
+        perm,
+        1.0.into(),
+        a,
+        size_a,
+        0.0.into(),
+        None,
+        1,
+        false,
+    )
 }
 
 #[cfg(test)]
