@@ -1,6 +1,17 @@
 use std::{env, path::PathBuf};
 
+use bindgen::callbacks::ParseCallbacks;
 use cmake::Config;
+
+#[derive(Debug)]
+struct DoxygenCallback;
+
+impl ParseCallbacks for DoxygenCallback {
+    fn process_comment(&self, comment: &str) -> Option<String> {
+        let transformed = doxygen_rs::generator::rustdoc(comment.into());
+        Some(transformed.unwrap_or_else(|_| comment.into()))
+    }
+}
 
 fn main() {
     // Build hptt
@@ -18,6 +29,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header(header.to_str().unwrap())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .parse_callbacks(Box::new(DoxygenCallback))
         .generate()
         .expect("Unable to generate bindings");
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());

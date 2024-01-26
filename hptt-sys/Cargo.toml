@@ -13,6 +13,7 @@ links = "hptt"
 [build-dependencies]
 bindgen = "0.69.2"
 cmake = "0.1.50"
+doxygen-rs = "0.4.2"
 
 [dependencies]
 openmp-sys = "1.2.3"
