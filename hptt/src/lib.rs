@@ -1,6 +1,3 @@
-static mut DEFAULT_NUM_THREADS: u32 = 1;
-static mut USE_ROW_MAJOR: bool = false;
-
 mod implementations {
     use std::mem::transmute;
 
@@ -9,8 +6,6 @@ mod implementations {
     use hptt_sys::{
         __BindgenComplex, cTensorTranspose, dTensorTranspose, sTensorTranspose, zTensorTranspose,
     };
-
-    use crate::{DEFAULT_NUM_THREADS, USE_ROW_MAJOR};
 
     pub trait Transposable<T> {
         fn transpose(
@@ -89,18 +84,7 @@ mod implementations {
         }
 
         fn transpose_simple(perm: &[i32], a: &[f32], size_a: &[i32]) -> Vec<f32> {
-            Self::transpose(
-                perm,
-                1.0f32,
-                a,
-                size_a,
-                None,
-                0.0f32,
-                None,
-                None,
-                unsafe { DEFAULT_NUM_THREADS },
-                unsafe { USE_ROW_MAJOR },
-            )
+            Self::transpose(perm, 1.0f32, a, size_a, None, 0.0f32, None, None, 1, false)
         }
     }
 
@@ -142,18 +126,7 @@ mod implementations {
         }
 
         fn transpose_simple(perm: &[i32], a: &[f64], size_a: &[i32]) -> Vec<f64> {
-            Self::transpose(
-                perm,
-                1.0,
-                a,
-                size_a,
-                None,
-                0.0,
-                None,
-                None,
-                unsafe { DEFAULT_NUM_THREADS },
-                unsafe { USE_ROW_MAJOR },
-            )
+            Self::transpose(perm, 1.0, a, size_a, None, 0.0, None, None, 1, false)
         }
     }
 
@@ -205,8 +178,8 @@ mod implementations {
                 Complex32::new(0.0f32, 0.0f32),
                 None,
                 None,
-                unsafe { DEFAULT_NUM_THREADS },
-                unsafe { USE_ROW_MAJOR },
+                1,
+                false,
             )
         }
     }
@@ -259,8 +232,8 @@ mod implementations {
                 Complex64::new(0.0, 0.0),
                 None,
                 None,
-                unsafe { DEFAULT_NUM_THREADS },
-                unsafe { USE_ROW_MAJOR },
+                1,
+                false,
             )
         }
     }
@@ -299,8 +272,8 @@ where
 }
 
 /// Computes the transpose of `a`, i.e. returns the data with the axes permuted in
-/// the order given by `perm`. It uses the global thread and row/column major
-/// settings.
+/// the order given by `perm`. It assumes column-major memory layout and uses a
+/// single thread.
 ///
 /// # Example
 /// ```
@@ -317,22 +290,6 @@ where
     (): implementations::Transposable<T>,
 {
     <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
-}
-
-/// Sets the number of threads used by [`transpose_simple<T>()`]. This is a global property,
-/// shared across threads but not guarded by a mutex. Hence, race conditions can happen.
-pub fn set_number_of_threads(threads: u32) {
-    unsafe {
-        DEFAULT_NUM_THREADS = threads;
-    }
-}
-
-/// Sets whether to use row or column major for [`transpose_simple<T>()`]. This is a global property,
-/// shared across threads but not guarded by a mutex. Hence, race conditions can happen.
-pub fn set_use_row_major(row_major: bool) {
-    unsafe {
-        USE_ROW_MAJOR = row_major;
-    }
 }
 
 #[cfg(test)]
