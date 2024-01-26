@@ -32,7 +32,7 @@ mod implementations {
                 v
             } else if v.is_empty() {
                 // Given output is empty, make sure the capacity suffices
-                v.reserve_exact(capacity - v.capacity());
+                v.reserve_exact(capacity.saturating_sub(v.capacity()));
                 v
             } else {
                 panic!("Output vector must either have same length as input, or must be empty");
@@ -56,12 +56,13 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<f32> {
-            assert!(
-                outer_size_a.is_none() && outer_size_b.is_none(),
-                "Outer size not supported yet"
-            );
-
-            let mut out = with_capacity(b, a.len());
+            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
+            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
+                outer_b.iter().product::<i32>().try_into().unwrap()
+            } else {
+                actual_a_len
+            };
+            let mut out = with_capacity(b, b_total_len);
             unsafe {
                 sTensorTranspose(
                     perm.as_ptr(),
@@ -76,7 +77,7 @@ mod implementations {
                     num_threads.try_into().unwrap(),
                     use_row_major.into(),
                 );
-                out.set_len(a.len());
+                out.set_len(b_total_len);
             }
             out
         }
@@ -95,11 +96,13 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<f64> {
-            assert!(
-                outer_size_a.is_none() && outer_size_b.is_none(),
-                "Outer size not supported yet"
-            );
-            let mut out = with_capacity(b, a.len());
+            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
+            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
+                outer_b.iter().product::<i32>().try_into().unwrap()
+            } else {
+                actual_a_len
+            };
+            let mut out = with_capacity(b, b_total_len);
             unsafe {
                 dTensorTranspose(
                     perm.as_ptr(),
@@ -114,7 +117,7 @@ mod implementations {
                     num_threads.try_into().unwrap(),
                     use_row_major.into(),
                 );
-                out.set_len(a.len());
+                out.set_len(b_total_len);
             }
             out
         }
@@ -133,11 +136,13 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<Complex32> {
-            assert!(
-                outer_size_a.is_none() && outer_size_b.is_none(),
-                "Outer size not supported yet"
-            );
-            let mut out: Vec<Complex32> = with_capacity(b, a.len());
+            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
+            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
+                outer_b.iter().product::<i32>().try_into().unwrap()
+            } else {
+                actual_a_len
+            };
+            let mut out = with_capacity(b, b_total_len);
             unsafe {
                 cTensorTranspose(
                     perm.as_ptr(),
@@ -153,7 +158,7 @@ mod implementations {
                     num_threads.try_into().unwrap(),
                     use_row_major.into(),
                 );
-                out.set_len(a.len());
+                out.set_len(b_total_len);
             }
             out
         }
@@ -172,11 +177,13 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<Complex64> {
-            assert!(
-                outer_size_a.is_none() && outer_size_b.is_none(),
-                "Outer size not supported yet"
-            );
-            let mut out: Vec<Complex64> = with_capacity(b, a.len());
+            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
+            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
+                outer_b.iter().product::<i32>().try_into().unwrap()
+            } else {
+                actual_a_len
+            };
+            let mut out = with_capacity(b, b_total_len);
             unsafe {
                 zTensorTranspose(
                     perm.as_ptr(),
@@ -192,7 +199,7 @@ mod implementations {
                     num_threads.try_into().unwrap(),
                     use_row_major.into(),
                 );
-                out.set_len(a.len());
+                out.set_len(b_total_len);
             }
             out
         }
@@ -203,29 +210,74 @@ mod implementations {
 /// the out tensor `b` multiplied by `beta`. The axes of `a` are permuted in the
 /// order given by `perm`. If `b` is `None`, a new vector is created and returned.
 ///
-/// In other words: `b = alpha * transpose(a) + beta * b`
+/// In other words: `b = alpha * transpose(a) + beta * b`.
+///
+/// The outer size arguments can be used to operate on sub-tensors:
+/// * `outer_size_a` stores the outer-sizes of each dimension of `a`. This parameter
+/// may be None, indicating that the outer-size is equal to `size_a`. If it is given,
+/// `outer_size_a[i] >= size_a[i]` for all `i` must hold.
+/// * `outer_size_b` stores the outer-sizes of each dimension of `b`. This parameter
+/// may be None, indicating that the outer-size is equal to `perm(sizeA)`.  If it is
+/// given, `outer_size_b[i] >= perm(size_a)[i]` for all `i` must hold.
 pub fn transpose<T>(
     perm: &[i32],
     alpha: T,
     a: &[T],
     size_a: &[i32],
+    outer_size_a: Option<&[i32]>,
     beta: T,
     b: Option<Vec<T>>,
+    outer_size_b: Option<&[i32]>,
     num_threads: u32,
     use_row_major: bool,
 ) -> Vec<T>
 where
     (): implementations::Transposable<T>,
 {
+    // Check perm
+    assert_eq!(
+        perm.len(),
+        size_a.len(),
+        "len(perm) must be equal to len(size_a)"
+    );
+
+    // Check outer_size_a
+    if let Some(outer_a) = outer_size_a {
+        assert!(
+            outer_a.len() == size_a.len(),
+            "len(outer_size_a) must be equal to len(size_a)"
+        );
+        for (&outer, &size) in outer_a.iter().zip(size_a) {
+            assert!(
+                outer >= size,
+                "outer_size_a[i] must be greater equal size_a[i]"
+            );
+        }
+    }
+
+    // Check outer_size_b
+    if let Some(outer_b) = outer_size_b {
+        assert!(
+            outer_b.len() == size_a.len(),
+            "len(outer_size_b) must be equal to len(size_a)"
+        );
+        for (&outer, size) in outer_b.iter().zip(perm.iter().map(|&i| size_a[i as usize])) {
+            assert!(
+                outer >= size,
+                "outer_size_b[i] must be greater equal size_a[perm[i]]"
+            );
+        }
+    }
+
     <() as implementations::Transposable<T>>::transpose(
         perm,
         alpha,
         a,
         size_a,
-        None,
+        outer_size_a,
         beta,
         b,
-        None,
+        outer_size_b,
         num_threads,
         use_row_major,
     )
@@ -255,7 +307,9 @@ where
         1.0.into(),
         a,
         size_a,
+        None,
         0.0.into(),
+        None,
         None,
         1,
         false,
@@ -286,7 +340,18 @@ mod tests {
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
         ];
 
-        let b = transpose(&[3, 2, 0, 1], 1.0, a, &[2, 2, 3, 1], 0.0, None, 1, true);
+        let b = transpose(
+            &[3, 2, 0, 1],
+            1.0,
+            a,
+            &[2, 2, 3, 1],
+            None,
+            0.0,
+            None,
+            None,
+            1,
+            true,
+        );
 
         check_transposed_equality(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
     }
@@ -319,7 +384,9 @@ mod tests {
             Complex64::new(1.0, 0.0),
             a,
             &[3, 2],
+            None,
             Complex64::new(0.0, 0.0),
+            None,
             None,
             1,
             true,
@@ -330,17 +397,118 @@ mod tests {
 
     #[test]
     fn test_multithreaded_f32() {
-        let a = [
+        let a = &[
             2.4f32, 3.5, 4.6, 5.7, 6.8, 7.9, 8.0, 9.1, 10.2, 11.3, 12.4, 13.5,
         ];
-        let b = transpose(&[2, 0, 1], 1.0f32, &a, &[2, 3, 2], 0.0f32, None, 4, false);
+        let b = transpose(
+            &[2, 0, 1],
+            1.0f32,
+            a,
+            &[2, 3, 2],
+            None,
+            0.0f32,
+            None,
+            None,
+            4,
+            false,
+        );
 
-        check_transposed_equality(&a, &b, &[0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11]);
+        check_transposed_equality(a, &b, &[0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11]);
+    }
+
+    #[test]
+    fn test_outer_size_a_f32() {
+        let a = &[
+            2.4f32, 3.5, 4.6, 5.7, 6.8, 7.9, 8., 9.1, 10.2, 11.3, 12.4, 13.5,
+        ];
+        let b = transpose(
+            &[2, 0, 1],
+            1.0f32,
+            a,
+            &[2, 2, 1],
+            Some(&[2, 3, 2]),
+            0.0f32,
+            None,
+            None,
+            1,
+            false,
+        );
+
+        let solution = vec![2.4f32, 3.5, 4.6, 5.7];
+
+        assert_eq!(b, solution);
+    }
+
+    #[test]
+    fn test_outer_size_b_f64() {
+        let a = &[5.0, -3., 7.5, 0., 6.8, -3.1];
+        let b = transpose(
+            &[1, 0],
+            1.0,
+            a,
+            &[3, 2],
+            None,
+            0.0,
+            None,
+            Some(&[3, 3]),
+            1,
+            false,
+        );
+
+        let solution = vec![5.0, 0., 0., -3., 6.8, 0., 7.5, -3.1, 0.];
+
+        assert_eq!(b, solution);
+    }
+
+    #[test]
+    fn test_outer_sizes_f64() {
+        // Input: a 4x4 matrix
+        // Output: twice the transpose of the left lower 2x2 sub-matrix + b, written
+        // into the left upper 2x2 sub-matrix of b (3x3)
+        #[rustfmt::skip]
+        let a = &[
+            -1.0,  2.5,  7.5, -3.0,
+             0.0,  4.2,  3.7,  1.2,
+             4.5,  6.1, -2.3,  0.5,
+             1.2,  3.4,  5.6,  7.8,
+        ];
+
+        #[rustfmt::skip]
+        let b = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+            7.0, 8.0, 9.0
+        ];
+
+        #[rustfmt::skip]
+        let solution = vec![
+            10.0,  4.4, 3.0,
+            16.2, 11.8, 6.0,
+             7.0,  8.0, 9.0
+        ];
+
+        let b = transpose(
+            &[1, 0],
+            2.0,
+            &a[8..], // start from the upper left element of the lower 2x2 sub-matrix
+            &[2, 2],
+            Some(&[4, 4]),
+            1.0,
+            Some(b),
+            Some(&[3, 3]),
+            1,
+            true,
+        );
+
+        assert_eq!(b.len(), solution.len());
+        for (&bs, &ss) in b.iter().zip(solution.iter()) {
+            assert_approx_eq!(f64, bs, ss, ulps = 2);
+        }
     }
 
     #[test]
     fn test_alpha_beta_complex32() {
-        let a = [
+        let a = &[
             Complex32::new(1.0, 2.0),
             Complex32::new(0.0, -1.0),
             Complex32::new(0.1, 2.5),
@@ -361,10 +529,12 @@ mod tests {
         let c = transpose(
             &[1, 0],
             Complex32::new(1.0, 0.5),
-            &a,
+            a,
             &[3, 2],
+            None,
             Complex32::new(0.5, 1.0),
             Some(b),
+            None,
             1,
             true,
         );
