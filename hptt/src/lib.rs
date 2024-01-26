@@ -21,7 +21,23 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<T>;
 
-        fn transpose_simple(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>;
+        fn transpose_simple(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
+        where
+            T: From<f64>,
+        {
+            Self::transpose(
+                perm,
+                1.0.into(),
+                a,
+                size_a,
+                None,
+                0.0.into(),
+                None,
+                None,
+                1,
+                false,
+            )
+        }
     }
 
     /// Returns a vector with the requested capacity. If vec is given, it should either
@@ -82,10 +98,6 @@ mod implementations {
             }
             out
         }
-
-        fn transpose_simple(perm: &[i32], a: &[f32], size_a: &[i32]) -> Vec<f32> {
-            Self::transpose(perm, 1.0f32, a, size_a, None, 0.0f32, None, None, 1, false)
-        }
     }
 
     impl Transposable<f64> for () {
@@ -123,10 +135,6 @@ mod implementations {
                 out.set_len(a.len());
             }
             out
-        }
-
-        fn transpose_simple(perm: &[i32], a: &[f64], size_a: &[i32]) -> Vec<f64> {
-            Self::transpose(perm, 1.0, a, size_a, None, 0.0, None, None, 1, false)
         }
     }
 
@@ -167,21 +175,6 @@ mod implementations {
             }
             out
         }
-
-        fn transpose_simple(perm: &[i32], a: &[Complex32], size_a: &[i32]) -> Vec<Complex32> {
-            Self::transpose(
-                perm,
-                Complex32::new(1.0f32, 0.0f32),
-                a,
-                size_a,
-                None,
-                Complex32::new(0.0f32, 0.0f32),
-                None,
-                None,
-                1,
-                false,
-            )
-        }
     }
 
     impl Transposable<Complex64> for () {
@@ -220,21 +213,6 @@ mod implementations {
                 out.set_len(a.len());
             }
             out
-        }
-
-        fn transpose_simple(perm: &[i32], a: &[Complex64], size_a: &[i32]) -> Vec<Complex64> {
-            Self::transpose(
-                perm,
-                Complex64::new(1.0, 0.0),
-                a,
-                size_a,
-                None,
-                Complex64::new(0.0, 0.0),
-                None,
-                None,
-                1,
-                false,
-            )
         }
     }
 }
@@ -288,6 +266,7 @@ where
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
     (): implementations::Transposable<T>,
+    T: From<f64>,
 {
     <() as implementations::Transposable<T>>::transpose_simple(perm, a, size_a)
 }
