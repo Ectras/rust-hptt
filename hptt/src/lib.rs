@@ -481,7 +481,7 @@ mod tests {
         ];
 
         #[rustfmt::skip]
-        let solution = vec![
+        let solution = [
             10.0,  4.4, 3.0,
             16.2, 11.8, 6.0,
              7.0,  8.0, 9.0
