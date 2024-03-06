@@ -1,10 +1,11 @@
 # Wrapper crate for [HPTT](https://github.com/springer13/hptt)
 
-This crate provides Rust bindings for the **HPTT library** (High-Performance Tensor Transpose) written in C++. It allows to efficiently transform tensor data to a new shape (similar to e.g. numpy's `transpose()`). Check the original repository for the list of features. It has to be noted that this interface only uses the C interface, which does not expose control over the tuning plan.
+This crate provides Rust bindings for the **HPTT library** (High-Performance Tensor Transpose) written in C++. It allows to efficiently transform tensor data to a new shape (similar to e.g. numpy's `transpose()`). Check the original repository for the list of features. It has to be noted that this crate only uses the C interface, which does not expose control over the tuning plan.
 
 ## Using this crate
 
-The hptt repository is shipped as submodule together with this crate. When building the crate, the hptt C++ library is built using cmake. **This can lead to longer build times, especially in release mode!** Also note that cmake must already be installed on the system. The crate can then be added as normal dependency to Cargo.toml.
+This crate makes use of the hptt-sys crate which ships with the C++ code of hptt and takes care of building hptt when the crate is being built. For this, **cmake must be installed on the system**.
+The build can take a while.
 
 ## Interface
 
