@@ -10,7 +10,7 @@ keywords = ["hptt", "transpose", "tensor"]
 categories = ["api-bindings", "science", "algorithms"]
 
 [dependencies]
-num-complex = "0.4.4"
+num-complex = "0.4.6"
 hptt-sys = { path = "../hptt-sys" }
 
 [dev-dependencies]

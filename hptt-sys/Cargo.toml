@@ -11,7 +11,7 @@ categories = ["external-ffi-bindings", "science", "algorithms"]
 links = "hptt"
 
 [build-dependencies]
-bindgen = "0.69.2"
+bindgen = "0.69.4"
 cmake = "0.1.50"
 doxygen-rs = "0.4.2"
 
