@@ -320,7 +320,7 @@ where
 mod tests {
     use std::fmt::Debug;
 
-    use float_cmp::assert_approx_eq;
+    use float_cmp::{assert_approx_eq, ApproxEq};
     use num_complex::{Complex32, Complex64};
 
     use crate::{transpose, transpose_simple};
@@ -331,6 +331,15 @@ mod tests {
     {
         for (i, &j) in permutated_indices.iter().enumerate() {
             assert_eq!(transposed[i], original[j]);
+        }
+    }
+
+    fn check_approx_equality<T>(a: &[T], b: &[T])
+    where T: ApproxEq + Debug + Copy,
+    {
+        assert_eq!(a.len(), b.len());
+        for (&ai, &bi) in a.iter().zip(b.iter()) {
+            assert_approx_eq!(T, ai, bi);
         }
     }
 
@@ -436,7 +445,7 @@ mod tests {
 
         let solution = vec![2.4f32, 3.5, 4.6, 5.7];
 
-        assert_eq!(b, solution);
+        check_approx_equality(&b, &solution);
     }
 
     #[test]
@@ -457,7 +466,7 @@ mod tests {
 
         let solution = vec![5.0, 0., 0., -3., 6.8, 0., 7.5, -3.1, 0.];
 
-        assert_eq!(b, solution);
+        check_approx_equality(&b, &solution);
     }
 
     #[test]
@@ -480,13 +489,6 @@ mod tests {
             7.0, 8.0, 9.0
         ];
 
-        #[rustfmt::skip]
-        let solution = [
-            10.0,  4.4, 3.0,
-            16.2, 11.8, 6.0,
-             7.0,  8.0, 9.0
-        ];
-
         let b = transpose(
             &[1, 0],
             2.0,
@@ -500,10 +502,14 @@ mod tests {
             true,
         );
 
+        #[rustfmt::skip]
+        let solution = [
+            10.0,  4.4, 3.0,
+            16.2, 11.8, 6.0,
+             7.0,  8.0, 9.0
+        ];
+
         assert_eq!(b.len(), solution.len());
-        for (&bs, &ss) in b.iter().zip(solution.iter()) {
-            assert_approx_eq!(f64, bs, ss, ulps = 2);
-        }
     }
 
     #[test]
