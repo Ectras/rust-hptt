@@ -287,6 +287,7 @@ where
 /// // 'b' is now the flat data of a (3x2) matrix
 /// assert_eq!(b, vec![1.0, 3.0, 5.0, 2.0, 4.0, 6.0]);
 /// ```
+#[inline]
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
     (): implementations::Transposable<T>,
