@@ -43,6 +43,16 @@ mod implementations {
         }
     }
 
+    /// Computes the length of the output tensor given the size of the input or
+    /// optionally the size of the output, if it is larger.
+    fn output_len(size_a: &[i32], outer_size_b: Option<&[i32]>) -> usize {
+        if let Some(outer_b) = outer_size_b {
+            outer_b.iter().map(|&s| TryInto::<usize>::try_into(s).unwrap()).product()
+        } else {
+            size_a.iter().map(|&s| TryInto::<usize>::try_into(s).unwrap()).product()
+        }
+    }
+
     impl Transposable<f32> for () {
         fn transpose(
             perm: &[i32],
@@ -56,12 +66,7 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<f32> {
-            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
-            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
-                outer_b.iter().product::<i32>().try_into().unwrap()
-            } else {
-                actual_a_len
-            };
+            let b_total_len = output_len(size_a, outer_size_b);
             let mut out = with_capacity(b, b_total_len);
             unsafe {
                 sTensorTranspose(
@@ -96,12 +101,7 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<f64> {
-            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
-            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
-                outer_b.iter().product::<i32>().try_into().unwrap()
-            } else {
-                actual_a_len
-            };
+            let b_total_len = output_len(size_a, outer_size_b);
             let mut out = with_capacity(b, b_total_len);
             unsafe {
                 dTensorTranspose(
@@ -136,12 +136,7 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<Complex32> {
-            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
-            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
-                outer_b.iter().product::<i32>().try_into().unwrap()
-            } else {
-                actual_a_len
-            };
+            let b_total_len: usize = output_len(size_a, outer_size_b);
             let mut out = with_capacity(b, b_total_len);
             unsafe {
                 cTensorTranspose(
@@ -177,12 +172,7 @@ mod implementations {
             num_threads: u32,
             use_row_major: bool,
         ) -> Vec<Complex64> {
-            let actual_a_len: usize = size_a.iter().product::<i32>().try_into().unwrap();
-            let b_total_len: usize = if let Some(outer_b) = outer_size_b {
-                outer_b.iter().product::<i32>().try_into().unwrap()
-            } else {
-                actual_a_len
-            };
+            let b_total_len: usize = output_len(size_a, outer_size_b);
             let mut out = with_capacity(b, b_total_len);
             unsafe {
                 zTensorTranspose(
