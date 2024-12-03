@@ -12,7 +12,7 @@ links = "hptt"
 
 [build-dependencies]
 bindgen = "0.70.1"
-cmake = "0.1.51"
+cmake = "0.1.52"
 doxygen-rs = "0.4.2"
 
 [dependencies]
