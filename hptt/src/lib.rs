@@ -24,7 +24,10 @@ mod implementations {
 
     /// Returns a vector with the requested capacity. If vec is given, it should either
     /// have that many elements or be empty, in which case its capacity will be set accordingly.
-    fn with_capacity<T>(vec: Option<Vec<T>>, capacity: usize) -> Vec<T> {
+    fn with_capacity<T>(vec: Option<Vec<T>>, capacity: usize, zero_initialize: bool) -> Vec<T>
+    where
+        T: Clone + Default,
+    {
         // Get a vector with enough capacity
         if let Some(mut v) = vec {
             if v.len() >= capacity {
@@ -39,7 +42,11 @@ mod implementations {
             }
         } else {
             // Create a new vector
-            Vec::with_capacity(capacity)
+            if zero_initialize {
+                vec![T::default(); capacity]
+            } else {
+                Vec::with_capacity(capacity)
+            }
         }
     }
 
@@ -67,7 +74,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<f32> {
             let b_total_len = output_len(size_a, outer_size_b);
-            let mut out = with_capacity(b, b_total_len);
+            let mut out = with_capacity(b, b_total_len, outer_size_b.is_some());
             unsafe {
                 sTensorTranspose(
                     perm.as_ptr(),
@@ -102,7 +109,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<f64> {
             let b_total_len = output_len(size_a, outer_size_b);
-            let mut out = with_capacity(b, b_total_len);
+            let mut out = with_capacity(b, b_total_len, outer_size_b.is_some());
             unsafe {
                 dTensorTranspose(
                     perm.as_ptr(),
@@ -137,7 +144,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<Complex32> {
             let b_total_len: usize = output_len(size_a, outer_size_b);
-            let mut out = with_capacity(b, b_total_len);
+            let mut out = with_capacity(b, b_total_len, outer_size_b.is_some());
             unsafe {
                 cTensorTranspose(
                     perm.as_ptr(),
@@ -173,7 +180,7 @@ mod implementations {
             use_row_major: bool,
         ) -> Vec<Complex64> {
             let b_total_len: usize = output_len(size_a, outer_size_b);
-            let mut out = with_capacity(b, b_total_len);
+            let mut out = with_capacity(b, b_total_len, outer_size_b.is_some());
             unsafe {
                 zTensorTranspose(
                     perm.as_ptr(),
