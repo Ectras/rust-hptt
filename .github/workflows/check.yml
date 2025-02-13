@@ -86,8 +86,10 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
       - name: Install cargo-docs-rs
         uses: dtolnay/install@cargo-docs-rs
-      - name: cargo docs-rs
-        run: cargo docs-rs
+      - name: cargo docs-rs hptt
+        run: cargo docs-rs -p hptt
+      - name: cargo doc-rs hptt-sys
+        run: cargo docs-rs -p hptt-sys
   hack:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
