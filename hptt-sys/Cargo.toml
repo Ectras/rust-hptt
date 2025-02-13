@@ -9,6 +9,7 @@ repository = "https://github.com/Ectras/rust-hptt"
 keywords = ["hptt", "transpose", "tensor"]
 categories = ["external-ffi-bindings", "science", "algorithms"]
 links = "hptt"
+rust-version = "1.82"
 
 [build-dependencies]
 bindgen = "0.71.1"
