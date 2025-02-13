@@ -54,9 +54,15 @@ mod implementations {
     /// optionally the size of the output, if it is larger.
     fn output_len(size_a: &[i32], outer_size_b: Option<&[i32]>) -> usize {
         if let Some(outer_b) = outer_size_b {
-            outer_b.iter().map(|&s| TryInto::<usize>::try_into(s).unwrap()).product()
+            outer_b
+                .iter()
+                .map(|&s| TryInto::<usize>::try_into(s).unwrap())
+                .product()
         } else {
-            size_a.iter().map(|&s| TryInto::<usize>::try_into(s).unwrap()).product()
+            size_a
+                .iter()
+                .map(|&s| TryInto::<usize>::try_into(s).unwrap())
+                .product()
         }
     }
 
@@ -333,7 +339,8 @@ mod tests {
     }
 
     fn check_approx_equality<T>(a: &[T], b: &[T])
-    where T: ApproxEq + Debug + Copy,
+    where
+        T: ApproxEq + Debug + Copy,
     {
         assert_eq!(a.len(), b.len());
         for (&ai, &bi) in a.iter().zip(b.iter()) {
