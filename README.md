@@ -1,3 +1,5 @@
+![example workflow](https://github.com/Ectras/rust-hptt/actions/workflows/test.yml/badge.svg)
+
 # rust-hptt
 
 Rust bindings to the [HPTT library](https://github.com/springer13/hptt) (High-Performance Tensor Transpose) written in C++. This repository contains both the generated low-level bindings to the C++ library (hptt-sys) as well as a high-level API (hptt). 
