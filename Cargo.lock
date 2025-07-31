@@ -124,6 +124,7 @@ dependencies = [
  "float-cmp",
  "hptt-sys",
  "num-complex",
+ "num-traits",
 ]
 
 [[package]]
