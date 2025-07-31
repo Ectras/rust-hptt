@@ -1,3 +1,5 @@
+use num_traits::{ConstOne, ConstZero};
+
 mod implementations {
     use std::mem::transmute;
 
@@ -304,20 +306,9 @@ where
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
 where
     (): implementations::Transposable<T>,
-    T: From<f64>,
+    T: ConstZero + ConstOne,
 {
-    transpose(
-        perm,
-        1.0.into(),
-        a,
-        size_a,
-        None,
-        0.0.into(),
-        None,
-        None,
-        1,
-        false,
-    )
+    transpose(perm, T::ONE, a, size_a, None, T::ZERO, None, None, 1, false)
 }
 
 #[cfg(test)]
