@@ -289,8 +289,8 @@ where
 }
 
 /// Computes the transpose of `a`, i.e. returns the data with the axes permuted in
-/// the order given by `perm`. It assumes column-major memory layout and uses a
-/// single thread.
+/// the order given by `perm`. It assumes row-major memory layout and uses a single
+/// thread.
 ///
 /// # Example
 /// ```
@@ -300,7 +300,7 @@ where
 /// let perm = &[1, 0]; // swap the axes: put axis 1 first, axis 0 second
 /// let b = transpose_simple(perm, a, shape);
 /// // 'b' is now the flat data of a (3x2) matrix
-/// assert_eq!(b, vec![1.0, 3.0, 5.0, 2.0, 4.0, 6.0]);
+/// assert_eq!(b, vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
 /// ```
 #[inline]
 pub fn transpose_simple<T>(perm: &[i32], a: &[T], size_a: &[i32]) -> Vec<T>
@@ -308,7 +308,7 @@ where
     (): implementations::Transposable<T>,
     T: ConstZero + ConstOne,
 {
-    transpose(perm, T::ONE, a, size_a, None, T::ZERO, None, None, 1, false)
+    transpose(perm, T::ONE, a, size_a, None, T::ZERO, None, None, 1, true)
 }
 
 #[cfg(test)]
@@ -345,6 +345,18 @@ mod tests {
             0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
         ];
 
+        let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
+
+        check_transposed_equality(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
+    }
+
+    #[test]
+    fn test_simple_f64_tensor() {
+        // transpose_simple uses default row-major setting
+        let a = &[
+            0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
+        ];
+
         let b = transpose(
             &[3, 2, 0, 1],
             1.0,
@@ -355,20 +367,8 @@ mod tests {
             None,
             None,
             1,
-            true,
+            false,
         );
-
-        check_transposed_equality(a, &b, &[0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11]);
-    }
-
-    #[test]
-    fn test_simple_f64_tensor() {
-        // transpose_simple uses default column-major setting
-        let a = &[
-            0.1, 0.65, 0.34, 0.76, 0.54, 0.17, 0.0, 0.63, 0.37, 0.22, 0.05, 0.17,
-        ];
-
-        let b = transpose_simple(&[3, 2, 0, 1], a, &[2, 2, 3, 1]);
 
         check_transposed_equality(a, &b, &[0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
     }
