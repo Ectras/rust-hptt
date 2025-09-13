@@ -10,6 +10,10 @@ mod implementations {
     };
 
     pub trait Transposable<T> {
+        #[allow(
+            clippy::too_many_arguments,
+            reason = "This is matching the API of hptt"
+        )]
         fn transpose(
             perm: &[i32],
             alpha: T,
@@ -24,8 +28,9 @@ mod implementations {
         ) -> Vec<T>;
     }
 
-    /// Returns a vector with the requested capacity. If vec is given, it should either
-    /// have that many elements or be empty, in which case its capacity will be set accordingly.
+    /// Returns a vector with the requested capacity. If vec is given, it should
+    /// either have that many elements or be empty, in which case its capacity will
+    /// be set accordingly.
     fn with_capacity<T>(vec: Option<Vec<T>>, capacity: usize, zero_initialize: bool) -> Vec<T>
     where
         T: Clone + Default,
@@ -219,11 +224,15 @@ mod implementations {
 ///
 /// The outer size arguments can be used to operate on sub-tensors:
 /// * `outer_size_a` stores the outer-sizes of each dimension of `a`. This parameter
-/// may be None, indicating that the outer-size is equal to `size_a`. If it is given,
-/// `outer_size_a[i] >= size_a[i]` for all `i` must hold.
+///   may be None, indicating that the outer-size is equal to `size_a`. If it is
+///   given, `outer_size_a[i] >= size_a[i]` for all `i` must hold.
 /// * `outer_size_b` stores the outer-sizes of each dimension of `b`. This parameter
-/// may be None, indicating that the outer-size is equal to `perm(sizeA)`.  If it is
-/// given, `outer_size_b[i] >= perm(size_a)[i]` for all `i` must hold.
+///   may be None, indicating that the outer-size is equal to `perm(sizeA)`.  If it
+///   is given, `outer_size_b[i] >= perm(size_a)[i]` for all `i` must hold.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "This is matching the API of hptt"
+)]
 pub fn transpose<T>(
     perm: &[i32],
     alpha: T,
