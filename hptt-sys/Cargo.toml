@@ -12,7 +12,7 @@ links = "hptt"
 rust-version = "1.82"
 
 [build-dependencies]
-bindgen = "0.71.1"
+bindgen = "0.72.1"
 cmake = "0.1.54"
 doxygen-rs = "0.4.2"
 
