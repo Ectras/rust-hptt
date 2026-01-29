@@ -22,7 +22,13 @@ fn main() {
     // Link it
     println!("cargo:rustc-link-search={}", dst.join("lib").display());
     println!("cargo:rustc-link-lib=hptt");
-    println!("cargo:rustc-link-lib=stdc++");
+
+    // Link the C++ standard library
+    if cfg!(target_os = "linux") {
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+    } else if cfg!(target_os = "macos") {
+        println!("cargo:rustc-link-lib=dylib=c++");
+    }
 
     // Generate bindings
     let header = extern_path.join("api.h");
