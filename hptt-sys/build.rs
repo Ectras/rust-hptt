@@ -8,8 +8,14 @@ struct DoxygenCallback;
 
 impl ParseCallbacks for DoxygenCallback {
     fn process_comment(&self, comment: &str) -> Option<String> {
-        let transformed = doxygen_rs::generator::rustdoc(comment.into());
-        Some(transformed.unwrap_or_else(|_| comment.into()))
+        let transformed = match doxygen_bindgen::transform(comment) {
+            Ok(res) => res,
+            Err(err) => {
+                println!("cargo:warning=Problem processing doxygen comment: {comment}\n{err}");
+                comment.into()
+            }
+        };
+        Some(transformed)
     }
 }
 
